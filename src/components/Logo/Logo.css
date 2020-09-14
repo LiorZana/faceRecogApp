@@ -1,0 +1,19 @@
+.Tilt {
+    background: linear-gradient(to right, #4CA1AF, #C4E0E5);
+    margin-left: 30px;
+    box-shadow: 0.5px 0.5px 2px 2px grey;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10vh;
+}
+
+.icon-credit {
+    font-size: 11px;
+}
+
+.icon-credit > a {
+    color: #003238;
+    text-decoration: underline #8ba2ce;
+}
