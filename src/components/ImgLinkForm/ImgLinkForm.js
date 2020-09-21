@@ -1,7 +1,7 @@
 import React from 'react';
 import './ImgLinkForm.css'
 
-const ImgLinkForm = ({ onInputChange, onSubmit }) => {
+const ImgLinkForm = ({ onInputChange, onPictureSubmit }) => {
     return (
         <div className='ImgLinkForm center'>
             <p>
@@ -10,7 +10,7 @@ const ImgLinkForm = ({ onInputChange, onSubmit }) => {
 
             <div className='input shadow center bg-pattern'>
                 <input className='url no-outline' type='text' onInput={ onInputChange }/>
-                <button className='detect grow no-outline' onClick={ onSubmit }>Detect</button>
+                <button className='detect grow no-outline' onClick={ onPictureSubmit }>Detect</button>
             </div>
         </div>
     )

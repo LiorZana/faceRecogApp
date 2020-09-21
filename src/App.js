@@ -6,13 +6,9 @@ import SignIn from './components/SignIn/SignIn.js'
 import Register from './components/Register/Register.js'
 import Rank from './components/Rank/Rank.js';
 import ImgLinkForm from './components/ImgLinkForm/ImgLinkForm.js';
-import Clarifai from 'clarifai';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition.js'
 import './App.css';
 
-const app = new Clarifai.App({
-  apiKey: 'cb8b620355bc474e83db17daa2e7400b'
- });
 
 const particlesOptions = {
   fpsLimit: 60,
@@ -86,18 +82,37 @@ const particlesOptions = {
     },
   },
   detectRetina: true,
-}
+};
+
+const initialState = {
+      input: '',
+      imageUrl: '',
+      box: {},
+      route: 'signin',
+      isSignedIn: false,
+      user: {
+        id: "",
+        name: "",
+        email: "",
+        entries: 0,
+        joined: "",
+      }
+};
 
 class App extends Component {
   constructor() {
     super();
-    this.state = {
-      input: '',
-      imageUrl: 'a',
-      box: {},
-      route: 'signin',
-      isSignedIn: false,
-    }
+    this.state = initialState;
+    };
+
+  loadUser = (data) => {
+    this.setState({ user: {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      entries: data.entries,
+      joined: data.joined,
+    }})
   }
 
   calculateFaceLocation = (data) => {
@@ -121,17 +136,44 @@ class App extends Component {
     this.setState({ input: event.target.value });
   };
 
-  onSubmit = () => {
+  onPictureSubmit = () => {
     this.setState({ imageUrl: this.state.input });
+  
 
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-    .then(response => this.displayBox(this.calculateFaceLocation(response)))
-    .catch(err => console.log(err));
-  }
+    fetch('https://sleepy-beach-45073.herokuapp.com/imageurl', {
+          method: 'post',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            input: this.state.input,
+          })
+        })
+    .then(response => response.json())
+    .then(response => {
+      if (response) {
+        fetch('https://sleepy-beach-45073.herokuapp.com/image', {
+          method: 'put',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            id: this.state.user.id,
+          })
+        })
+
+        .then(response => response.json())
+
+        .then(count => {this.setState(Object.assign
+          (this.state.user, { entries: count }))
+                        }
+              ).catch(console.log);
+        }
+      this.displayBox(this.calculateFaceLocation(response))
+    })
+    .catch(err => console.log(err))
+    };
+  
 
   onRouteChange = (route) => {
     if (route === 'signout') {
-      this.setState({ isSignedIn: false })
+      this.setState(initialState)
     } else if (route === 'home') {
       this.setState({ isSignedIn: true  })
     }
@@ -144,19 +186,19 @@ renderSwitch = (route, imageUrl, box) => {
   case 'home': 
 return <>
       <Logo />
-      <Rank />
+      <Rank name={this.state.user.name} entries={this.state.user.entries}/>
       <ImgLinkForm 
-        onInputChange={this.onInputChange} onSubmit={this.onSubmit}
+        onInputChange={this.onInputChange} onPictureSubmit={this.onPictureSubmit}
       />
       <FaceRecognition imageUrl={imageUrl} box={box}/>
       </>
   case 'signin':
-    return <SignIn onRouteChange={this.onRouteChange}/>
+    return <SignIn onRouteChange={this.onRouteChange} loadUser={this.loadUser}/>
     
   case 'register':
-    return <Register onRouteChange={this.onRouteChange}/>;
+    return <Register onRouteChange={this.onRouteChange} loadUser={this.loadUser}/>;
   default:
-    return <SignIn onRouteChange={this.onRouteChange}/>
+    return <SignIn onRouteChange={this.onRouteChange} loadUser={this.loadUser}/>
   }
 }
 
