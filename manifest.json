@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Face-Recog",
+  "name": "An app that uses AI API to detect faces in images",
   "icons": [
     {
       "src": "favicon.ico",
