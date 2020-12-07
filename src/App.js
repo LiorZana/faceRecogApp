@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import Particles from 'react-particles-js';
 import Navigation from './components/Navigation/Navigation.js';
 import Logo from './components/Logo/Logo.js';
@@ -8,6 +9,8 @@ import Rank from './components/Rank/Rank.js';
 import ImgLinkForm from './components/ImgLinkForm/ImgLinkForm.js';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition.js'
 import './App.css';
+
+import { setInputField } from './actions.js';
 
 
 const particlesOptions = {
@@ -84,8 +87,20 @@ const particlesOptions = {
   detectRetina: true,
 };
 
+
+const mapStateToProps = state => {
+  return {
+    input: state.input,
+    imgURL: state.imgURL
+  }
+} 
+const mapDispatchToProps = dispatch => {
+  return {
+    onInputChange: event => { dispatch(setInputField(event.target.value))},
+  }
+}
+
 const initialState = {
-      input: '',
       imageUrl: '',
       box: {},
       route: 'signin',
@@ -132,19 +147,17 @@ class App extends Component {
     this.setState({ box: box });
   }
 
-  onInputChange = (event) => {
-    this.setState({ input: event.target.value });
-  };
 
   onPictureSubmit = () => {
-    this.setState({ imageUrl: this.state.input });
+    const { input } = this.props;
+    this.setState({ imageUrl: input });
   
 
     fetch('https://sleepy-beach-45073.herokuapp.com/imageurl', {
           method: 'post',
           headers: { 'Content-Type': 'application/json'},
           body: JSON.stringify({
-            input: this.state.input,
+            input: input,
           })
         })
     .then(response => response.json())
@@ -181,14 +194,14 @@ class App extends Component {
   }
 
 
-renderSwitch = (route, imageUrl, box) => {
+renderSwitch = (route, imageUrl, box, onInputChange) => {
    switch(route) {
   case 'home': 
 return <>
       <Logo />
       <Rank name={this.state.user.name} entries={this.state.user.entries}/>
       <ImgLinkForm 
-        onInputChange={this.onInputChange} onPictureSubmit={this.onPictureSubmit}
+        onInputChange={onInputChange} onPictureSubmit={this.onPictureSubmit}
       />
       <FaceRecognition imageUrl={imageUrl} box={box}/>
       </>
@@ -206,14 +219,15 @@ return <>
   render()
   {  
     const { isSignedIn, route, imageUrl, box } = this.state;
+    const { onInputChange } = this.props;
     return (
       <div className="App">
         <Particles className='particles' params={particlesOptions}/>
         <Navigation onRouteChange={this.onRouteChange} isSignedIn={isSignedIn}/>
-        {this.renderSwitch(route, imageUrl, box)}
+        {this.renderSwitch(route, imageUrl, box, onInputChange)}
       </div>
       
     )};
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);
